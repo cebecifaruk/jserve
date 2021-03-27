@@ -20,6 +20,8 @@ export async function simpleAsync() {
 
 export const log = console.log;
 
+export const logStr = (x) => console.log(String(x));
+
 export default function (method, ...args) {
   // This is default function where all non matching requests comes here
 }

@@ -83,7 +83,7 @@ export const httpServer = (lib, port) =>
               body.push(chunk);
             })
             .on("end", () => {
-              res(Buffer.concat(body).toString());
+              res(Buffer.concat(body));
             });
         });
 
@@ -101,12 +101,15 @@ export const httpServer = (lib, port) =>
 
       var body = null;
 
-      if (req.method === "POST" || req.method === "PUT") {
+      if (req.method === "POST") {
         try {
-          body = JSON.parse(await getBody());
-        } catch (e) {
-          return sendJSON({ id: 0, error: "Parse Error", result: null });
-        }
+          body = await getBody();
+          body = JSON.parse(body.toString());
+        } catch (e) {}
+      } else if (req.method === "PUT") {
+        try {
+          body = await getBody();
+        } catch (e) {}
       }
 
       var headers = {
@@ -128,11 +131,7 @@ export const httpServer = (lib, port) =>
           const tokens = path.split("/");
           params = tokens.slice(2);
           method = tokens[1];
-        } else if (req.method === "POST" && req.url.startsWith("/rpc/")) {
-          id = 0;
-          method = req.url.slice(5);
-          params = [body];
-        } else if (req.method === "POST" || req.method === "PUT") {
+        } else if (req.method === "POST") {
           const keys = Object.keys(body);
           if (
             !(
@@ -146,6 +145,13 @@ export const httpServer = (lib, port) =>
           id = body.id;
           method = body.method;
           params = Array.isArray(body.params) ? body.params : [body.params];
+        } else if (req.method === "PUT") {
+          const path = req.url.startsWith("/rpc") ? req.url.slice(3) : req.url;
+          const tokens = path.split("/");
+          method = tokens[1];
+          params = tokens.slice(2);
+          id = 0;
+          params = [...params, body];
         } else {
           // TODO: Other methods
         }
