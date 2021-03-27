@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 import { ArgumentParser } from "argparse";
 import chalk from "chalk";
 import process from "process";
