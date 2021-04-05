@@ -186,9 +186,7 @@ export const httpServer = (lib, port) =>
         return res
           .writeHead(200, { ...headers, ...response.result.headers })
           .end(response.result.body);
-      else if (response.result)
-        return res.writeHead(200, headers).end(JSON.stringify(response));
-      else return res.writeHead(502, headers).end(JSON.stringify(response));
+      else return res.writeHead(200, headers).end(JSON.stringify(response));
     };
 
     const httpServer = http.createServer(app);
