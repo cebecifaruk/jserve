@@ -5,7 +5,7 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "test": "nodemon -x \"node cli.js -w 8080 examples/simple.js\""
+    "test": "nodemon -x \"node cli.js -w 8080 example/main.js\""
   },
   "keywords": [],
   "author": "",
