@@ -2,7 +2,7 @@ import http from "http";
 import websocket from "ws";
 import net from "net";
 import dgram from "dgram";
-import Session from "./sessions.js";
+import createSession from "./src/createSession.js";
 import _ from "lodash";
 import { Html, Static } from "./src/Types.js";
 
@@ -13,7 +13,7 @@ export const tcpServer = (lib, port) =>
   new Promise((res, rej) => {
     net
       .createServer((socket) => {
-        const s = new Session(
+        const s = createSession(
           lib,
           (x) => socket.write(Buffer.from(x)),
           socket.end
@@ -123,14 +123,13 @@ export const httpServer = (lib, port) =>
           // TODO: Other methods
         }
       } catch (e) {
-        return res
-          .write(502, {})
-          .end(JSON.stringify({ result: null, id, error: String(e) }));
+        res.statusCode = 502;
+        return res.end(JSON.stringify({ result: null, id, error: String(e) }));
       }
 
       // ------ In here: We have body, and method params, id values
 
-      const s = new Session({
+      const s = createSession({
         token: req.headers["authorization"]
           ? req.headers["authorization"].slice(7)
           : null,
@@ -160,7 +159,7 @@ export const httpServer = (lib, port) =>
     const httpServer = http.createServer(app);
     httpServer.listen(port, res(null));
     const wsHandler = async (ws, req) => {
-      const s = new Session(
+      const s = createSession(
         {
           ...lib,
           headers: req.headers,

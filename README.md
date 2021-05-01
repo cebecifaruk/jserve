@@ -6,6 +6,8 @@ You can serve your javascript functions with jserve. In order to install the lib
 npm install --save @cebecifaruk/jserve
 ```
 
+## Getting Started
+
 After installing the library, create a javascript file
 
 ```js
@@ -67,3 +69,5 @@ for instance, you can call
 - Process manager
 - JSON Configuration File
 - jserve init project-name
+- TLS Support
+- Rate Limiting
