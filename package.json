@@ -11,14 +11,13 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "argparse": "^2.0.1",
     "chalk": "^4.1.0",
     "chokidar": "^3.5.1",
-    "decache": "^4.6.0",
     "lodash": "^4.17.21",
     "mime-types": "^2.1.29",
     "ramda": "^0.27.1",
-    "ws": "^7.4.2"
+    "ws": "^7.4.2",
+    "yargs": "^16.2.0"
   },
   "engines": {
     "node": ">=13.3"

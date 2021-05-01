@@ -1,59 +1,67 @@
 #!/usr/bin/env node
-import { ArgumentParser } from "argparse";
+
+import yargs from "yargs";
 import chalk from "chalk";
 import process from "process";
 import chokidar from "chokidar";
 import jserve from "./index.js";
 import path from "path";
 
-// ===== Utils and Argument Parser =====
-
 const green = (...args) => console.log(...args.map((x) => chalk.green(x)));
 const red = (...args) => console.log(...args.map((x) => chalk.red(x)));
 const blue = (...args) => console.log(...args.map((x) => chalk.blue(x)));
 
+const params = yargs(process.argv.slice(2))
+  //.usage("Usage: $0 [-W] [-w HTTP_PORT] [-t TCP_PORT] [-u UDP_PORT] path")
+  .scriptName("jserve")
+  .usage("$0 <cmd> [args]")
+  .command(["serve <script>", "$0"], "serve a javascript file", {
+    w: {
+      alias: "http",
+      demandOption: false,
+      default: 8080,
+      describe: "Watch the script file",
+      type: "number",
+    },
+    u: {
+      alias: "udp",
+      demandOption: false,
+      default: 8090,
+      describe: "Raw UDP Server Port",
+      type: "number",
+    },
+    t: {
+      alias: "tcp",
+      demandOption: false,
+      default: 8090,
+      describe: "Raw TCP Server Port",
+      type: "number",
+    },
+    watch: {
+      demandOption: false,
+      default: false,
+      describe: "watch mode",
+      type: "boolean",
+    },
+  })
+  .command("init <project>", "create a simple project", {
+    m: {
+      alias: "mode",
+      demandOption: false,
+      default: 8080,
+      describe: "HTTP Server Port",
+      type: "number",
+    },
+  })
+  .epilog("Javascript API serving tool").argv;
+
+const HTTP_PORT = params.http;
+const TCP_PORT = params.tcp;
+const UDP_PORT = params.udp;
+const SCRIPT_PATH = params.script;
+const WATCH = params.watch;
+
 blue("Server is starting...");
-const parser = new ArgumentParser({
-  prog: "jserve",
-  description: "Javascript API serving tool",
-});
-
-parser.add_argument("-W", "--watch", {
-  dest: "WATCH",
-  help: "Watch the script file",
-  action: "store_true",
-});
-parser.add_argument("-w", "--http", {
-  dest: "HTTP_PORT",
-  type: "int",
-  help: "HTTP Server Port",
-  default: null,
-});
-parser.add_argument("-t", "--tcp", {
-  dest: "TCP_PORT",
-  type: "int",
-  help: "Raw TCP Server Port",
-  default: null,
-});
-parser.add_argument("-u", "--udp", {
-  dest: "UDP_PORT",
-  type: "int",
-  help: "Raw UDP Server Port",
-  default: null,
-});
-parser.add_argument("SCRIPT_PATH", {
-  metavar: "path",
-  type: "str",
-  help: "Path of the script",
-});
-
-const {
-  HTTP_PORT,
-  TCP_PORT,
-  UDP_PORT,
-  SCRIPT_PATH,
-  WATCH,
-} = parser.parse_args();
 
 process.on("exit", () => {
   if (!(HTTP_PORT | TCP_PORT | UDP_PORT))
@@ -61,9 +69,6 @@ process.on("exit", () => {
 });
 
 process.on("SIG_TERM", () => red("Server is stopped"));
-
-// TODO: Watch script file
-// TODO: Directory serve
 
 // ===== Loading Scripts =====
 
