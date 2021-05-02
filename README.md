@@ -6,37 +6,30 @@ You can serve your javascript functions with jserve. In order to install the lib
 npm install --save @cebecifaruk/jserve
 ```
 
-## Getting Started
+or you can install it globally
 
-After installing the library, create a javascript file
+```
+npm install -g @cebecifaruk/jserve
+```
 
-```js
-// You do not have to import the library
+You can create a simple project with
 
-function sampleFn() {
-    return "Hi, this function can not call from the outside";
-}
+```
+jserve init simple-project --template=simple
+```
 
-// Exported functions can be called from the outside world
-export function exportedFn() {
-    return "Hello World"
-}
+You can list project templates with
 
-// You can also use async functions
-export async function() {
-    const delay = t => new Promise((res,rej) => setTimeout(res,t));
-    await delay(3000);
-}
-
-export function dangerous() {
-    throw "This function throws an error";
-}
+```
+jserve init --list-templates
 ```
 
 You can serve your javascript file like this:
 
 ```
-npx jserve -w 8080 main.js
+npm run serve
+or
+jserve serve index.js
 ```
 
 This command will start an HTTP Server on 8080. You can invoke your functions with these options:
@@ -64,11 +57,12 @@ for instance, you can call
 ## Roadmap
 
 - SSE support
-- Watch file changes
 - Serve static content with command line
 - Process manager
 - JSON Configuration File
-- jserve init project-name
 - TLS Support
 - Rate Limiting
 - TypeScript Migration
+- Type Check for functions
+- createStore
+- createPersistantStore
