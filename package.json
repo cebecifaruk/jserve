@@ -9,7 +9,7 @@
   "bugs": {
     "url": "https://github.com/cebecifaruk/jserve/issues"
   },
-  "homepage": "https://github.com/cebecifaruk/jserve",
+  "homepage": "https://github.com/cebecifaruk/jserve#readme",
   "main": "index.js",
   "type": "module",
   "scripts": {

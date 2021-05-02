@@ -6,13 +6,16 @@ import process from "process";
 import chokidar from "chokidar";
 import jserve from "./index.js";
 import path from "path";
+import fs from "fs";
+import url from "url";
+import { exec } from "child_process";
 
 const green = (...args) => console.log(...args.map((x) => chalk.green(x)));
 const red = (...args) => console.log(...args.map((x) => chalk.red(x)));
 const blue = (...args) => console.log(...args.map((x) => chalk.blue(x)));
+const gray = (...args) => console.log(...args.map((x) => chalk.gray(x)));
 
 const params = yargs(process.argv.slice(2))
-  //.usage("Usage: $0 [-W] [-w HTTP_PORT] [-t TCP_PORT] [-u UDP_PORT] path")
   .scriptName("jserve")
   .usage("$0 <cmd> [args]")
   .command(["serve <script>", "$0"], "serve a javascript file", {
@@ -44,61 +47,116 @@ const params = yargs(process.argv.slice(2))
       type: "boolean",
     },
   })
-  .command("init <project>", "create a simple project", {
-    m: {
-      alias: "mode",
+  .command("init <project>", "create a project from a template", {
+    template: {
       demandOption: false,
-      default: 8080,
-      describe: "HTTP Server Port",
-      type: "number",
+      default: "simple",
+      describe: "Template",
+      type: "string",
+    },
+    "list-templates": {
+      default: false,
+      demandOption: false,
+      describe: "List available project templates",
+      type: "boolean",
     },
   })
   .epilog("Javascript API serving tool").argv;
 
-const HTTP_PORT = params.http;
-const TCP_PORT = params.tcp;
-const UDP_PORT = params.udp;
-const SCRIPT_PATH = params.script;
-const WATCH = params.watch;
+const commmands = {
+  async init({ project, template }) {
+    const version = JSON.parse(
+      await fs.promises.readFile(new URL("package.json", import.meta.url))
+    ).version;
+    const templateString = await fs.promises.readFile(
+      path.join(
+        path.dirname(url.fileURLToPath(import.meta.url)),
+        "templates",
+        template + ".js"
+      )
+    );
+    gray("Creating project directory");
+    await fs.promises.mkdir(project);
+    gray("Creating package.json");
+    fs.promises.writeFile(
+      path.join(project, "package.json"),
+      JSON.stringify(
+        {
+          name: project,
+          version: "1.0.0",
+          description: "",
+          main: "main.js",
+          type: "module",
+          scripts: {
+            serve: "jserve main.js",
+          },
+          dependencies: {
+            "@cebecifaruk/jserve": "^" + version,
+          },
+        },
+        null,
+        4
+      )
+    );
+    gray("Creating main.js");
+    fs.promises.writeFile(path.join(project, "main.js"), templateString);
+    gray("Installing npm dependencies");
+    exec(
+      "npm install",
+      { cwd: path.join(process.cwd(), project) },
+      (error, stdout, stderr) => {
+        if (error || stderr) red("Error:");
+        if (error) console.log(error);
+        if (stderr) console.log(stderr);
+        green("Project has been created.");
+        green("You can run your project with:");
+        blue("npm run serve");
+      }
+    );
+  },
+  async serve({ http, tcp, udp, script, watch }) {
+    blue("Server is starting...");
 
-blue("Server is starting...");
+    process.on("exit", () => {
+      if (!(http | tcp | udp))
+        red("Please check your script or your parameters");
+    });
 
-process.on("exit", () => {
-  if (!(HTTP_PORT | TCP_PORT | UDP_PORT))
-    red("Please check your script or your parameters");
-});
+    process.on("SIG_TERM", () => red("Server is stopped"));
 
-process.on("SIG_TERM", () => red("Server is stopped"));
+    // ===== Loading Scripts =====
 
-// ===== Loading Scripts =====
+    const environment = {
+      current: null,
+    };
 
-const environment = {
-  current: null,
+    async function updateAPI(script) {
+      try {
+        environment.current = await import(path.resolve(script));
+        green("Script has been loaded.");
+      } catch (e) {
+        if (typeof err === "object") {
+          if (err.message) {
+            red("\nMessage: " + err.message);
+          }
+          if (err.stack) {
+            red("\nStacktrace:");
+            red("====================");
+            red(err.stack);
+          }
+        } else red("\n" + String(e));
+      }
+    }
+
+    await updateAPI(script);
+    if (watch)
+      chokidar
+        .watch(path.resolve(script))
+        .on("change", (_, _script) => updateAPI(path.resolve(script)));
+
+    await jserve(environment.current, { http, udp, tcp });
+    green("Server has been started.");
+  },
 };
 
-async function updateAPI(script) {
-  try {
-    environment.current = await import(path.resolve(script));
-    green("Script has been loaded.");
-  } catch (e) {
-    if (typeof err === "object") {
-      if (err.message) {
-        red("\nMessage: " + err.message);
-      }
-      if (err.stack) {
-        red("\nStacktrace:");
-        red("====================");
-        red(err.stack);
-      }
-    } else red("\n" + String(e));
-  }
-}
-
-await updateAPI(SCRIPT_PATH);
-if (WATCH)
-  chokidar
-    .watch(path.resolve(SCRIPT_PATH))
-    .on("change", (_, script) => updateAPI(path.resolve(SCRIPT_PATH)));
-
-await jserve(environment.current, { HTTP_PORT, UDP_PORT, TCP_PORT });
-green("Server has been started.");
+commmands[params._.length > 0 ? params._[0] : "serve"](params);
