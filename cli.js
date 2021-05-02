@@ -8,12 +8,61 @@ import jserve from "./index.js";
 import path from "path";
 import fs from "fs";
 import url from "url";
-import { exec } from "child_process";
+import childProcess from "child_process";
+import ora from "ora";
 
 const green = (...args) => console.log(...args.map((x) => chalk.green(x)));
 const red = (...args) => console.log(...args.map((x) => chalk.red(x)));
 const blue = (...args) => console.log(...args.map((x) => chalk.blue(x)));
 const gray = (...args) => console.log(...args.map((x) => chalk.gray(x)));
+
+const spin = (text, action) =>
+  new Promise((res, rej) => {
+    const spinner = ora({
+      text,
+      spinner: {
+        interval: 100,
+        frames: [
+          "🕛 ",
+          "🕐 ",
+          "🕑 ",
+          "🕒 ",
+          "🕓 ",
+          "🕔 ",
+          "🕕 ",
+          "🕖 ",
+          "🕗 ",
+          "🕘 ",
+          "🕙 ",
+          "🕚 ",
+        ],
+      },
+    }).start();
+
+    action
+      .then((result) => {
+        spinner.succeed(text);
+        return res(result);
+      })
+      .catch((err) => {
+        spinner.fail(text);
+        return rej(err);
+      });
+  });
+
+const exec = async (command, options) => {
+  return new Promise(async (res, rej) => {
+    const process = childProcess.exec(
+      command,
+      options,
+      (error, stdout, stderr) => {
+        if (error) return rej(error);
+        if (stderr) return rej(stderr);
+        return res(stdout);
+      }
+    );
+  });
+};
 
 const params = yargs(process.argv.slice(2))
   .scriptName("jserve")
@@ -75,44 +124,41 @@ const commmands = {
         template + ".js"
       )
     );
-    gray("Creating project directory");
-    await fs.promises.mkdir(project);
-    gray("Creating package.json");
-    fs.promises.writeFile(
-      path.join(project, "package.json"),
-      JSON.stringify(
-        {
-          name: project,
-          version: "1.0.0",
-          description: "",
-          main: "main.js",
-          type: "module",
-          scripts: {
-            serve: "jserve main.js",
+    await spin("Creating project directory", fs.promises.mkdir(project));
+    await spin(
+      "Creating package.json",
+      fs.promises.writeFile(
+        path.join(project, "package.json"),
+        JSON.stringify(
+          {
+            name: project,
+            version: "1.0.0",
+            description: "",
+            main: "main.js",
+            type: "module",
+            scripts: {
+              serve: "jserve main.js",
+            },
+            dependencies: {
+              "@cebecifaruk/jserve": "^" + version,
+            },
           },
-          dependencies: {
-            "@cebecifaruk/jserve": "^" + version,
-          },
-        },
-        null,
-        4
+          null,
+          4
+        )
       )
     );
-    gray("Creating main.js");
-    fs.promises.writeFile(path.join(project, "main.js"), templateString);
-    gray("Installing npm dependencies");
-    exec(
-      "npm install",
-      { cwd: path.join(process.cwd(), project) },
-      (error, stdout, stderr) => {
-        if (error || stderr) red("Error:");
-        if (error) console.log(error);
-        if (stderr) console.log(stderr);
-        green("Project has been created.");
-        green("You can run your project with:");
-        blue("npm run serve");
-      }
+    spin(
+      "Creating main.js",
+      fs.promises.writeFile(path.join(project, "main.js"), templateString)
     );
+    await spin(
+      "Installing npm dependencies",
+      exec("npm install", { cwd: path.join(process.cwd(), project) })
+    );
+    green("Project has been created.");
+    green("You can run your project with:");
+    blue("npm run serve");
   },
   async serve({ http, tcp, udp, script, watch }) {
     blue("Server is starting...");
