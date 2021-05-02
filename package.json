@@ -35,10 +35,6 @@
     "ws": "^7.4.2",
     "yargs": "^16.2.0"
   },
-  "engines": {
-    "node": ">=13.3"
-  },
-  "engineStrict": true,
   "bin": {
     "jserve": "./cli.js"
   }
