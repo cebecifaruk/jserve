@@ -1,16 +1,31 @@
 {
   "name": "@cebecifaruk/jserve",
   "version": "1.0.3",
-  "description": "",
+  "description": "Serve your scripts",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cebecifaruk/jserve.git"
+  },
+  "bugs": {
+    "url": "https://github.com/cebecifaruk/jserve/issues"
+  },
+  "homepage": "https://github.com/cebecifaruk/jserve",
   "main": "index.js",
   "type": "module",
   "scripts": {
     "test": "nodemon -x \"node cli.js -w 8080 example/main.js\""
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "http",
+    "web",
+    "websocket",
+    "api"
+  ],
+  "author": "Faruk CEBECI",
   "license": "ISC",
   "dependencies": {
+    "@babel/core": "^7.14.0",
+    "@babel/preset-typescript": "^7.13.0",
     "chalk": "^4.1.0",
     "chokidar": "^3.5.1",
     "lodash": "^4.17.21",
