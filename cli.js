@@ -10,6 +10,7 @@ import fs, { rm } from "fs";
 import url from "url";
 import childProcess from "child_process";
 import ora from "ora";
+import untildify from "untildify";
 
 const green = (...args) => console.log(...args.map((x) => chalk.green(x)));
 const red = (...args) => console.log(...args.map((x) => chalk.red(x)));
@@ -120,8 +121,42 @@ const params = yargs(process.argv.slice(2))
   .command("log", "[TODO] Get the log of a process", {})
   .command("reload", "[TODO] Reload config file", {})
   .command("startup", "[TODO] Add jserve to the startup")
-  .option("conf", {})
+  .option("conf", {
+    default: "~/.jserve.config.json",
+    describe: "Path of the configuration file",
+    type: "string",
+  })
   .epilog("Javascript API serving tool").argv;
+
+const conf = {
+  current: {},
+  path: params.conf,
+  async read() {
+    const exists = (f) =>
+      fs.promises
+        .access(f)
+        .then(() => true)
+        .catch(() => false);
+    const confPath = untildify(conf.path);
+    if (!(await exists(confPath))) await fs.promises.writeFile(confPath, "{}");
+    conf.current = JSON.parse(await fs.promises.readFile(confPath));
+    return conf;
+  },
+  async write() {
+    await fs.promises.writeFile(
+      untildify(conf.path),
+      JSON.stringify(conf.current, null, 4)
+    );
+  },
+};
+
+conf
+  .read()
+  .then(console.log)
+  .then(() => {
+    conf.current = { a: 1 };
+    conf.write();
+  });
 
 const commmands = {
   async init({ project, template }) {
