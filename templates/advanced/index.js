@@ -25,3 +25,7 @@ export const logStr = (x) => console.log(String(x));
 export default function (method, ...args) {
   // This is default function where all non matching requests comes here
 }
+
+export const num = 5;
+export const str = "string";
+export const bool = true;
