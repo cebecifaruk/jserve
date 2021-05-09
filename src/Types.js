@@ -1,33 +1,34 @@
-import mime from "mime-types";
-import fs from "fs";
-import path from "path";
-
-export function Html(body = "", headers = {}) {
+export function HttpRequest(headers, body) {
   return {
-    type: "HttpResponse",
-    headers: {
-      "Content-Type": "text/html",
-    },
+    __proto__: HttpRequest.prototype,
+    headers,
     body,
   };
 }
 
-export function Static(root) {
-  return async (...params) => {
-    const dirs = params.slice(0, -1);
-    const file = params[params.length - 1];
-    const filePath = path.join(root, ...dirs, file);
-    try {
-      await fs.promises.access(filePath, fs.R_OK);
-    } catch (e) {
-      return Html("<h1>Page Not Found</h1>");
-    }
-    return {
-      type: "HttpResponse",
-      headers: {
-        "Content-Type": mime.contentType(file),
-      },
-      body: await fs.promises.readFile(filePath),
-    };
+export function HttpResponse(headers, body) {
+  return {
+    __proto__: HttpResponse.prototype,
+    type: "HttpResponse",
+    headers,
+    body,
+  };
+}
+
+export function Html(body = "", headers = {}) {
+  return HttpResponse(
+    {
+      "Content-Type": "text/html",
+    },
+    body
+  );
+}
+
+export function HtmlElement(type, props, ...children) {
+  return {
+    __proto__: HtmlElement.prototype,
+    type,
+    props,
+    children,
   };
 }
