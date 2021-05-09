@@ -4,7 +4,7 @@ import yargs from "yargs";
 import chalk from "chalk";
 import process from "process";
 import chokidar from "chokidar";
-import jserve from "./index.js";
+import jserve from "./src/index.js";
 import path from "path";
 import fs from "fs";
 import url from "url";
@@ -65,12 +65,6 @@ const exec = async (command, options) => {
     );
   });
 };
-
-function set(obj, key, value) {
-  const result = { ...obj };
-  result[key] = value;
-  return result;
-}
 
 const params = yargs(process.argv.slice(2))
   .scriptName("jserve")
@@ -276,7 +270,7 @@ const commmands = {
       "Updating configuration file",
       fs.promises.writeFile(
         conf,
-        JSON.stringify(set(confContent, key, value), null, 4)
+        JSON.stringify({ ...confContent, [key]: value }, null, 4)
       )
     );
   },

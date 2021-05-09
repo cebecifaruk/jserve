@@ -10,9 +10,10 @@
     "url": "https://github.com/cebecifaruk/jserve/issues"
   },
   "homepage": "https://github.com/cebecifaruk/jserve#readme",
-  "main": "index.js",
+  "main": "src/index.js",
   "type": "module",
   "scripts": {
+    "post-install": "mkdir -p node_modules/@cebecifaruk && ln -s ../../ node_modules/@cebecifaruk/jserve",
     "test": "nodemon -x \"node cli.js -w 8080 example/main.js\""
   },
   "keywords": [
