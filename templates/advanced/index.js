@@ -1,5 +1,4 @@
-import { Html, Static } from "../index.js";
-import path from "path";
+import { Html, Static } from "@cebecifaruk/jserve";
 
 export function htmlSample() {
   return Html("<h1>Hello World</h1>");
@@ -9,7 +8,7 @@ export function simple() {
   return "Hello";
 }
 
-export const folder = Static("examples/static");
+export const folder = Static("static");
 
 const delay = (t) => new Promise((res, rej) => setTimeout(res, t));
 
