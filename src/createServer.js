@@ -3,6 +3,7 @@ import websocket from "ws";
 import net from "net";
 import dgram from "dgram";
 import createSession from "./createSession.js";
+import { createDocumentedEnv } from "./createDoc.js";
 import _ from "lodash";
 
 export function createTcpServer(lib, port) {
@@ -196,12 +197,19 @@ export function createHttpServer(app, wsHandler, port) {
 }
 
 export async function createServer(
-  lib,
-  { HTTPS_PORT = null, HTTP_PORT = null, UDP_PORT = null, TCP_PORT = null }
+  env,
+  {
+    HTTPS_PORT = null,
+    HTTP_PORT = null,
+    UDP_PORT = null,
+    TCP_PORT = null,
+    doc = true,
+  }
 ) {
-  if (HTTP_PORT) await createHttpServer(app(lib), wsApp(lib), HTTP_PORT);
-  if (TCP_PORT) await createTcpServer(lib, TCP_PORT);
-  if (UDP_PORT) await createUdpServer(lib, UDP_PORT);
+  if (doc) env = createDocumentedEnv(env);
+  if (HTTP_PORT) await createHttpServer(app(env), wsApp(env), HTTP_PORT);
+  if (TCP_PORT) await createTcpServer(env, TCP_PORT);
+  if (UDP_PORT) await createUdpServer(env, UDP_PORT);
 }
 
 export default createServer;
