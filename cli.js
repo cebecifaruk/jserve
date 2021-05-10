@@ -68,7 +68,7 @@ const exec = async (command, options) => {
 
 const params = yargs(process.argv.slice(2))
   .scriptName("jserve")
-  .usage("$0 <cmd> [args]")
+  .usage("Javascript API serving tool.\n\n$0 <cmd> [args]")
   .command(["serve <script>", "$0"], "Serve a javascript file", {
     w: {
       alias: "http",
@@ -131,6 +131,7 @@ const params = yargs(process.argv.slice(2))
   .command("log", "Get the log of a process", {})
   .command("conf-init [conf]", "Create a configuration file")
   .command("conf-show [conf]", "Show a config file")
+  .command("conf-check [conf]", "Check configuration file")
   .command(
     "conf-set <key> <value> [conf]",
     "Set a property to a value in a conf file"
@@ -139,30 +140,8 @@ const params = yargs(process.argv.slice(2))
   .command("conf-rm <name> [conf]", "Remove a server from a conf file")
   .alias("v", "version")
   .alias("h", "help")
-  .example("deneme")
-  .epilog("Javascript API serving tool").argv;
-
-// const conf = {
-//   current: {},
-//   path: params.conf,
-//   async read() {
-//     const exists = (f) =>
-//       fs.promises
-//         .access(f)
-//         .then(() => true)
-//         .catch(() => false);
-//     const confPath = untildify(conf.path);
-//     if (!(await exists(confPath))) await fs.promises.writeFile(confPath, "{}");
-//     conf.current = JSON.parse(await fs.promises.readFile(confPath));
-//     return conf;
-//   },
-//   async write() {
-//     await fs.promises.writeFile(
-//       untildify(conf.path),
-//       JSON.stringify(conf.current, null, 4)
-//     );
-//   },
-// };
+  .example("jserve index.js", "Create a server from index.js")
+  .epilog("https://github.com/cebecifaruk/jserve").argv;
 
 const commmands = {
   async init({ project, template = "simple" }) {
@@ -190,24 +169,6 @@ const commmands = {
     const environment = {
       current: null,
     };
-
-    // async function updateAPI(script) {
-    //   try {
-    //     environment.current = ;
-    //   } catch (e) {
-    //     throw e;
-    //     if (typeof err === "object") {
-    //       if (err.message) {
-    //         red("\nMessage: " + err.message);
-    //       }
-    //       if (err.stack) {
-    //         red("\nStacktrace:");
-    //         red("====================");
-    //         red(err.stack);
-    //       }
-    //     } else red("\n" + String(e));
-    //   }
-    // }
 
     const updateAPI = async (script) =>
       await spin(
