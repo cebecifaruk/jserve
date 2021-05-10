@@ -166,15 +166,13 @@ const commmands = {
     blue("npm run serve");
   },
   async serve({ http, tcp, udp, script, watch }) {
-    const environment = {
-      current: null,
-    };
+    const environment = {};
 
     const updateAPI = async (script) =>
       await spin(
         "Loading script",
-        import(path.resolve(script)).then(
-          (result) => (environment.current = result)
+        import(path.resolve(script)).then((result) =>
+          Object.assign(environment, result)
         )
       );
     await updateAPI(script);
@@ -184,12 +182,12 @@ const commmands = {
           "Updating script",
           fs.promises
             .readFile(path.resolve(script))
-            .then((src) => import("data:text/javascript," + src))
-            .then((result) => (environment.current = result))
+            .then((src) => import(`data:text/javascript,${src}`))
+            .then((result) => Object.assign(environment, result))
         )
       );
 
-    const server = await jserve(environment.current, {
+    const server = await jserve(environment, {
       HTTP_PORT: http,
       UDP_PORT: udp,
       TCP_PORT: tcp,
