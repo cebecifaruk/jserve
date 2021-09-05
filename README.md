@@ -52,7 +52,35 @@ for instance, you can call
 
 ## Invoke with Websocket
 
+
+## Special Function Names
+
+- default: For 
+- index: For HTTP / path
+
 ## Helper Functions
+
+You can import helper functions with an import statement:
+
+```
+import { Html, Static } from "@cebecifaruk/jserve";
+```
+
+Html: Creates an html response for http protocol
+
+```
+export function webPage() {
+	return Html("<h1>Hello World</h1>");
+}
+```
+```
+export const folder = Static("static");
+```
+
+## Exported Functions
+
+- export default function (mathod, ...params) {...}
+- export function fnName (...params) {...}
 
 ## Roadmap
 
